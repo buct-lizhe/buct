@@ -1,0 +1,275 @@
+﻿<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>程序变量运行可视化平台</title>
+    <link rel="stylesheet" type="text/css" href="css/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="css/scanboard.css"/>
+    <link rel="stylesheet" type="text/css" href="css/animsition.css"/>
+    <link rel="stylesheet" type="text/css" href="css/jquery.shCircleLoader.css"/>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.shCircleLoader-min.js"></script>
+    <style>
+        input[type='range']::-webkit-slider-thumb {
+            -webkit-appearance: none;
+        }
+
+        input[type='range']::-webkit-slider-runnable-track {
+            height: 15px;
+            width: 60px;
+            border-radius: 10px;
+            /*将轨道设为圆角的*/
+            box-shadow: 0 1px 1px #def3f8, inset 0 0.125em 0.125em #0d1112;
+            /*轨道内置阴影效果*/
+        }
+
+        input[type='range']:focus {
+            outline: none;
+        }
+
+        input[type='range']::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 35px;
+            width: 35px;
+            margin-top: -10px;
+            /*使滑块超出轨道部分的偏移量相等*/
+            background: #ffffff;
+            border-radius: 50%;
+            /*外观设置为圆形*/
+            border: solid 0.125em rgba(205, 224, 230, 0.5);
+            /*设置边框*/
+            box-shadow: 0 0.125em 0.125em #3b4547;
+            /*添加底部阴影*/
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="scanboardWp animsition">
+        <div id="top">
+            <div class="wp clearfix">
+                <div class="topLogo">
+                    <a alin>程序变量运行可视化平台</a>
+                </div>
+                <div class="topBar">
+                    <div class="topTime">时间加载中...</div>
+                    <div class="clearfix">
+                        <a href="javascript:;" class="signOut fr">退出</a>
+                        <div class="company fr">
+                            <h3>北京化工大学</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Top End!-->
+
+        <!--Main Start!-->
+        <div id="main" class="wp">
+            <div class="left">
+                <!--各阶段平均用时统计-->
+                <div class="item">
+                    <div class="itemTit">
+                        <span class="border-green">源代码</span>
+                    </div>
+                    <div class="itemCon1">
+
+                        <ul class="listStyle">
+                            <li class="clearfix">
+                                <span><strong>代码</strong></span>
+                                <a class="code1"><strong>行号</strong></a>
+                            </li>
+                            <div v-for="code in codes" :key="code.index">
+                            <li class="clearfix" >
+                                <a  href="javascript:;" v-if="choose_index!=code.index" >
+                                    <span v-text="code.value" ></span>
+                                </a>
+                                <a  href="javascript:;" v-if="choose_index==code.index" >
+                                    <span style="color: #ffd220;font-size: 30px" v-text="code.value" ></span>
+                                </a>
+                                <a  href="javascript:;" class="code" v-if="choose_index!=code.index" v-text="code.index"></a>
+                                <a  href="javascript:;" class="code" style="color: #ffd220;font-size: 30px" v-if="choose_index==code.index" v-text="code.index"></a>
+                            </li>
+                            </div>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+            <div class="right">
+                <div class="item billState">
+                    <div class="itemTit">
+                        <span class="border-green">程序运行变量状态</span>
+                    </div>
+                    <div class="itemCon">
+                        <div class="StateBox">
+                            <div class="StateTit">
+                                <span><strong>变量名</strong></span>
+                                <span><strong>取值</strong></span>
+                                <span><strong>行号</strong></span>
+                            </div>
+                            <div class="itemCon">
+                                <ul class="listStyle">
+                                    <div v-for="var1 in vars" >
+                                        <li class="clearfix" >
+                                            <div class="fontInner clearfix" >
+                                                <span v-if="choose_index!=var1.index" v-text="var1.varName" ></span>
+                                                <span style="color: #ffd220;font-size: 30px" v-if="choose_index==var1.index" v-text="var1.varName" ></span>
+                                                <span v-if="choose_index!=var1.index" v-text="var1.varValue" ></span>
+                                                <span style="color: #ffd220;font-size: 30px" v-if="choose_index==var1.index" v-text="var1.varValue" ></span>
+                                                <span v-if="choose_index!=var1.index" v-text="var1.index" ></span>
+                                                <span style="color: #ffd220;font-size: 30px" v-if="choose_index==var1.index" v-text="var1.index" ></span>
+                                            </div>
+                                        </li>
+                                    </div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div align="center">
+                <input
+                        style="width: 400px"
+                        type="range"
+                        min="0"
+                        v-bind:max="max"
+                        v-bind:value="node.index"
+                        v-on:input="onChg($event)"
+                >
+            </div>
+            <div align="center" style="padding-top: 20px">
+                <a href="javascript:;" @click="change(1)" v-if="node.index>1"  class="signOut">《First</a>
+                <a href="javascript:;" @click="change(node.index-1)" v-if="node.index>1" class="signOut">《Back</a>&nbsp;&nbsp;&nbsp;
+                <a style="color: #02b6d4;align-content:center;font-size: 20px">step <a style="color: #02b6d4;font-size: 20px" v-text="this.node.index"></a> <a style="color: #02b6d4;align-content:center;font-size: 20px">of</a> <a style="color: #02b6d4;font-size: 20px" v-text="this.max"></a></a>
+                <a href="javascript:;" @click="change(node.index+1)" v-if="node.index<max" class="signOut">Forward》</a>
+                <a href="javascript:;" @click="change(max)" v-if="node.index<max" class="signOut">Last》</a>
+            </div>
+        </div>
+        <!--Main End!-->
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/scanboard.js"></script>
+<script type="text/javascript" src="js/fontscroll.js"></script>
+<script type="text/javascript" src="js/jquery.animsition.js"></script>
+<script type="text/javascript" src="js/jquery.nicescroll.js"></script>
+<script type="text/javascript" src="js/echarts.min.js"></script>
+</html>
+
+<script src="js/vue.js"></script>
+<script src="js/axios.min.js"></script>
+<script>
+    const app = new Vue({
+        el:"#app",
+        data:{
+            vars:[],
+            vars_whole:[],
+            codes:[],
+            codeLength:0,
+            max: 10,
+            choose_index:-1,
+            node: {
+                index: 5,
+            },
+            detailOps:{},
+        },
+        methods:{
+            getCode(){
+                axios.get("http://192.168.52.1:8081/code/getCode").then((res) => {
+                    this.codes = res.data.codes.codeInfo;
+                    this.codeLength = res.data.codes.codeInfo.length;
+                    this.max = res.data.sum_index;
+                    this.node.index = this.max;
+                    this.getVarValue( this.codeLength );
+                    this.getDetailOps();
+                    // console.log( res.data.sum_index )
+                });
+            },
+            getVarValue( index ){
+                // console.log( index );
+                axios.get("http://192.168.52.1:8081/code/getVarValue?index="+index).then((res) => {
+                    // console.log( res.data )
+                    this.vars = res.data.vars;
+                    this.vars_whole = this.vars;
+                    // console.log( this.vars.length )
+            });
+            },
+            getDetailOps () {
+                axios.get("http://192.168.52.1:8081/code/getDeatilOp").then((res) => {
+                    // console.log( res.data );
+                    this.detailOps = res.data.detailOps;
+                    // console.log( this.detaiOps )
+                });
+            },
+            onChg (e) {
+                this.vars = this.vars_whole;
+                _detailOps = this.detailOps;
+                this.node.sum = e.target.value;
+                console.log( this.node.sum )
+                // console.log( _detailOps )
+                var _vars = [];
+                if( this.node.sum > 0 ) {
+                    var count = 0;
+                    for (var i = 0; i < this.vars.length; i++) {
+                        for( var j = this.node.sum; j >= 1; j-- ){
+                            name1 =  _detailOps[j][0].variable_name;
+                            name2 = this.vars[i].varName;
+                            if( name1== name2  ){
+                                // console.log( _detailOps[j][0].variable_name+"  "+_detailOps[j][2].variable_value+"  "+_detailOps[j][1].index);
+                                var v = {
+                                    "varName": _detailOps[j][0].variable_name,
+                                    "varValue":_detailOps[j][2].variable_value,
+                                    "index":_detailOps[j][1].index
+                                }
+                                _vars[count++] = v;
+                                if( j == this.node.sum ){
+                                    this.choose_index = _detailOps[j][1].index;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                this.vars = _vars;
+                this.node.index = this.node.sum;
+            },
+            change( index ){
+                this.vars = this.vars_whole;
+                _detailOps = this.detailOps;
+                this.node.sum = index;
+                console.log( this.node.sum )
+                // console.log( _detailOps )
+                var _vars = [];
+                if( this.node.sum > 0 ) {
+                    var count = 0;
+                    for (var i = 0; i < this.vars.length; i++) {
+                        for( var j = this.node.sum; j >= 1; j-- ){
+                            name1 =  _detailOps[j][0].variable_name;
+                            name2 = this.vars[i].varName;
+                            if( name1== name2  ){
+                                // console.log( _detailOps[j][0].variable_name+"  "+_detailOps[j][2].variable_value+"  "+_detailOps[j][1].index);
+                                var v = {
+                                    "varName": _detailOps[j][0].variable_name,
+                                    "varValue":_detailOps[j][2].variable_value,
+                                    "index":_detailOps[j][1].index
+                                }
+                                _vars[count++] = v;
+                                if( j == this.node.sum ){
+                                    this.choose_index = _detailOps[j][1].index;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                this.vars = _vars;
+                this.node.index = this.node.sum;
+            },
+        },
+        created(){
+            this.getCode();
+        }
+    })
+</script>
